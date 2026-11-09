@@ -1,0 +1,31 @@
+name: mirror-ornl-gnds
+
+on:
+  push:
+    branches: [main, master]
+    paths: ['.github/workflows/mirror.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Clone ORNL gnds
+        run: |
+          git clone --depth 1 https://code.ornl.gov/RNSD/gnds.git gnds-src
+          tar czf gnds-master.tar.gz gnds-src
+          ls -la gnds-master.tar.gz
+          du -sh gnds-src
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: gnds-master
+          name: gnds-master
+          body: "Transit mirror of https://code.ornl.gov/RNSD/gnds (master branch), fetched to build AMPX. Safe to delete."
+          files: gnds-master.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
